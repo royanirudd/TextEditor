@@ -1,56 +1,96 @@
 import javax.swing.*;
+import javax.swing.undo.UndoManager;
 import java.io.*;
 
 public class TextEditor {
     public static void main(String[] args) {
-        //This is creating the window GUI
-        JFrame frame = new JFrame("Simple Text Editor");
+        SwingUtilities.invokeLater(() -> {
+            // This is creating the window GUI
+            JFrame frame = new JFrame("Simple Text Editor");
 
-        //This is the text area to write in 20rowsx60cols
-        JTextArea textArea = new JTextArea(20,60);
-        frame.add(new JScrollPane(textArea)); //Scrollable text area
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); //When closed shuts down
-        frame.pack();
-        frame.setVisible(true);
+            // This is the text area to write in 20rowsx60cols
+            JTextArea textArea = new JTextArea(20, 60);
+            frame.add(new JScrollPane(textArea)); // Scrollable text area
+            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // When closed shuts down
 
-        //Adding menu bar along with open and save
-        JMenuBar menuBar = new JMenuBar();
-        JMenu fileMenu = new JMenu("File");
-        JMenuItem openItem = new JMenuItem("Open");
-        JMenuItem saveItem = new JMenuItem("Save");
+            // Adding menu bar along with open and save
+            JMenuBar menuBar = new JMenuBar();
+            JMenu fileMenu = new JMenu("File");
+            JMenuItem openItem = new JMenuItem("Open");
+            JMenuItem saveItem = new JMenuItem("Save");
 
-        fileMenu.add(openItem);
-        fileMenu.add(saveItem);
-        menuBar.add(fileMenu);
-        frame.setJMenuBar(menuBar);
+            fileMenu.add(openItem);
+            fileMenu.add(saveItem);
+            menuBar.add(fileMenu);
 
-        //Open and save files
-        JFileChooser fileChooser = new JFileChooser();
-        int result = fileChooser.showOpenDialog(frame); //Show the file dialogue window
+            JMenu editMenu = new JMenu("Edit");
+            JMenuItem cutItem = new JMenuItem("Cut");
+            JMenuItem copyItem = new JMenuItem("Copy");
+            JMenuItem pasteItem = new JMenuItem("Paste");
+            JMenuItem undoItem = new JMenuItem("Undo");
+            JMenuItem redoItem = new JMenuItem("Redo");
 
-        //Check if the user selected a file
-        if(result == JFileChooser.APPROVE_OPTION) {
-            File file = fileChooser.getSelectedFile(); // Get chosen file
-            try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
-                textArea.read(reader, null); //Display the file's contents in JTextArea
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
-        }
+            editMenu.add(cutItem);
+            editMenu.add(copyItem);
+            editMenu.add(pasteItem);
+            editMenu.add(undoItem);
+            editMenu.add(redoItem);
 
-        //Saving files
+            menuBar.add(editMenu);
+            frame.setJMenuBar(menuBar);
 
-        JFileChooser jFileChooser = new JFileChooser();
-        int results = fileChooser.showSaveDialog(frame); //Show save dialog
+            // Undo manager
+            UndoManager undoManager = new UndoManager();
+            textArea.getDocument().addUndoableEditListener(undoManager);
 
-        if (result == JFileChooser.APPROVE_OPTION) {
-            File file = fileChooser.getSelectedFile(); //Get the file
-            try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
-                textArea.write(writer); //Write the contents of textArea to the file
+            // File operations
+            JFileChooser fileChooser = new JFileChooser();
 
-            } catch (IOException ex){
-                ex.printStackTrace();
-            }
-        }
+            openItem.addActionListener(e -> {
+                int result = fileChooser.showOpenDialog(frame);
+                if (result == JFileChooser.APPROVE_OPTION) {
+                    File file = fileChooser.getSelectedFile();
+                    try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+                        textArea.read(reader, null);
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
+                        JOptionPane.showMessageDialog(frame, "Error reading file", "Error", JOptionPane.ERROR_MESSAGE);
+                    }
+                }
+            });
+
+            saveItem.addActionListener(e -> {
+                int result = fileChooser.showSaveDialog(frame);
+                if (result == JFileChooser.APPROVE_OPTION) {
+                    File file = fileChooser.getSelectedFile();
+                    try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
+                        textArea.write(writer);
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
+                        JOptionPane.showMessageDialog(frame, "Error saving file", "Error", JOptionPane.ERROR_MESSAGE);
+                    }
+                }
+            });
+
+            // Edit operations
+            cutItem.addActionListener(e -> textArea.cut());
+            copyItem.addActionListener(e -> textArea.copy());
+            pasteItem.addActionListener(e -> textArea.paste());
+
+            undoItem.addActionListener(e -> {
+                if (undoManager.canUndo()) {
+                    undoManager.undo();
+                }
+            });
+
+            redoItem.addActionListener(e -> {
+                if (undoManager.canRedo()) {
+                    undoManager.redo();
+                }
+            });
+
+            frame.pack();
+            frame.setVisible(true);
+        });
     }
 }
