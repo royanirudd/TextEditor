@@ -11,5 +11,18 @@ public class TextEditor {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); //When closed shuts down
         frame.pack();
         frame.setVisible(true);
+
+        //Adding menu bar along with open and save
+        JMenuBar menuBar = new JMenuBar();
+        JMenu fileMenu = new JMenu("File");
+        JMenuItem openItem = new JMenuItem("Open");
+        JMenuItem saveItem = new JMenuItem("Save");
+
+        fileMenu.add(openItem);
+        fileMenu.add(saveItem);
+        menuBar.add(fileMenu);
+        frame.setJMenuBar(menuBar);
+
+
     }
 }
