@@ -1,4 +1,5 @@
 import javax.swing.*;
+import java.io.*;
 
 public class TextEditor {
     public static void main(String[] args) {
@@ -23,6 +24,33 @@ public class TextEditor {
         menuBar.add(fileMenu);
         frame.setJMenuBar(menuBar);
 
+        //Open and save files
+        JFileChooser fileChooser = new JFileChooser();
+        int result = fileChooser.showOpenDialog(frame); //Show the file dialogue window
 
+        //Check if the user selected a file
+        if(result == JFileChooser.APPROVE_OPTION) {
+            File file = fileChooser.getSelectedFile(); // Get chosen file
+            try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+                textArea.read(reader, null); //Display the file's contents in JTextArea
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        }
+
+        //Saving files
+
+        JFileChooser jFileChooser = new JFileChooser();
+        int results = fileChooser.showSaveDialog(frame); //Show save dialog
+
+        if (result == JFileChooser.APPROVE_OPTION) {
+            File file = fileChooser.getSelectedFile(); //Get the file
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
+                textArea.write(writer); //Write the contents of textArea to the file
+
+            } catch (IOException ex){
+                ex.printStackTrace();
+            }
+        }
     }
 }
